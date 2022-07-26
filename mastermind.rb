@@ -6,9 +6,7 @@
 # readability, modularity, brevity
 
 # the <super> in the baseclass Class Method refers to the Superclass's Class Method too.
-
 # how can we use inheritance?
-# 
 
 class BoardGame
   def self.description
@@ -18,51 +16,67 @@ end
 
 class Mastermind < BoardGame
   @@name = "Mastermind"
+  attr_reader :current_turn
 
   def initialize
+    @secret_code = []
+    @current_turn = "\t Current turn | * * * * |" 
     human = Human.new
     computer = Computer.new
     establish_secret_code(computer.code)
     human.speak
-
-    puts "\t  X X X X "
-    10.times do
-      puts "\t|---------|"
-      puts "\t| * * * * |"
-    end
-
-    game(human, computer)
+    draw_board
+    play_game(human, computer)
   end
 
-  def game(player1, player2)
+  def play_game(player1, player2)
     player1.take_turn
-    check_turn(player1)
+    compare_codes(player1)
     # player2.take_turn
   end
 
   def establish_secret_code(code)
-    @secret_code = code
+    @secret_code = code.split("")
     puts "Secret code established!!"
   end
 
   def draw_board
-    puts "\t  X X X X "
+    puts "\n\t                X X X X "
     9.times do # this depends on turn no.
-      puts "\t|---------|"
-      puts "\t| * * * * |"
+      puts "\t              |---------|"
+      puts "\t              | * * * * |"
     end
-    # puts "\t|---------|"
-    # puts "\t| 1 2 6 3 |"
+    puts "\t              |---------|"
+    puts current_turn
+    puts "\n"
   end
 
-  def check_turn(player)
-    puts player.guess
+  def compare_codes(player)
+    num_of_red_pegs = 0
+    num_of_white_pegs = 0
+
+    if player.guess == @secret_code then puts "You guessed correctly!!!" end
+    
+    num_of_red_pegs = @secret_code.each_index.reduce(0) do |total_red, index|
+      if player.guess[index] == @secret_code[index]
+        total_red +=1
+      end
+
+      total_red
+    end
+    
+    wrong_digits = @secret_code - player.guess
+    total_matches = 4 - wrong_digits.length
+    num_of_white_pegs = total_matches - num_of_red_pegs
+    
+    # p "num_of_red_pegs: #{num_of_red_pegs}"
+    # p "num_of_white_pegs: #{num_of_white_pegs}"
   end
   
   def self.description
     super
-    puts "<<>><<>><<>><<>><<>><<>><<>><<>><<>>"
-    puts "<< Mastermind is a 2 player game. >> \n\n<< One player is the codesetter, and the other the codebreaker. >>\n "
+    puts "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
+    puts "<< Mastermind is a classic 2 player boardgame. >> \n\n<< One player is the code-setter, and the other the codebreaker. >>\n "
     puts "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>\n "
   end
   
@@ -94,6 +108,7 @@ class Human < Player
   def take_turn
     super
     @guess = gets.chomp
+    @guess = @guess.split("")
   end
 end
 
@@ -105,7 +120,7 @@ class Computer < Player
   end
 
   def set_code
-    @code = 1234 # randomize later
+    @code = "1234" # randomize later
   end
 
   def speak
@@ -113,6 +128,6 @@ class Computer < Player
   end
 end
 
-# BoardGame.description
+# BoardGame.description (subclass inherits)
 Mastermind.description
 new_game = Mastermind.new

@@ -41,6 +41,10 @@ class Mastermind < BoardGame
   end
 
   def draw_board
+    # use Array.new to save each turn
+    # after each sucessive turn, set array[index] to turn
+    # draw board with elements from this array
+
     puts "\n\t                X X X X "
     9.times do # this depends on turn no.
       puts "\t              |---------|"
@@ -65,9 +69,9 @@ class Mastermind < BoardGame
       total_red
     end
     
-    wrong_digits = @secret_code - player.guess
-    total_matches = 4 - wrong_digits.length
-    num_of_white_pegs = total_matches - num_of_red_pegs
+    wrong_code_digits = @secret_code - player.guess #subtract 2 arrays
+    num_correct_digits = 4 - wrong_code_digits.length
+    num_of_white_pegs = num_correct_digits - num_of_red_pegs
     
     # p "num_of_red_pegs: #{num_of_red_pegs}"
     # p "num_of_white_pegs: #{num_of_white_pegs}"

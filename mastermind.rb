@@ -20,23 +20,29 @@ class Mastermind < BoardGame
 
   def initialize
     @secret_code = []
-    @current_turn = "\t Current turn | * * * * |" 
+    @turn_number = 1
     human = Human.new
     computer = Computer.new
     establish_secret_code(computer.code)
     human.speak
+    @current_turn = "\t Current turn | * * * * |" 
+    @all_turns = Array.new(10, "\t              | * * * * |")
+    @all_turns[0] = @current_turn
     draw_board
     play_game(human, computer)
   end
 
   def play_game(player1, player2)
-    player1.take_turn
-    compare_codes(player1)
-    # player2.take_turn
+    while true
+      player1.take_turn
+      compare_codes(player1)
+      draw_board
+    end
   end
 
   def establish_secret_code(code)
-    @secret_code = code.split("")
+    @secret_code = code
+    # @secret_code = code.split("")
     puts "Secret code established!!"
   end
 
@@ -46,12 +52,12 @@ class Mastermind < BoardGame
     # draw board with elements from this array
 
     puts "\n\t                X X X X "
-    9.times do # this depends on turn no.
+    
+    for i in (0..@all_turns.length-1).reverse_each
       puts "\t              |---------|"
-      puts "\t              | * * * * |"
+      puts @all_turns[i]
     end
-    puts "\t              |---------|"
-    puts current_turn
+
     puts "\n"
   end
 
@@ -59,7 +65,7 @@ class Mastermind < BoardGame
     num_of_red_pegs = 0
     num_of_white_pegs = 0
 
-    if player.guess == @secret_code then puts "You guessed correctly!!!" end
+    if player.guess == @secret_code then puts "You cracked the code! You won!" end
     
     num_of_red_pegs = @secret_code.each_index.reduce(0) do |total_red, index|
       if player.guess[index] == @secret_code[index]
@@ -73,8 +79,29 @@ class Mastermind < BoardGame
     num_correct_digits = 4 - wrong_code_digits.length
     num_of_white_pegs = num_correct_digits - num_of_red_pegs
     
-    # p "num_of_red_pegs: #{num_of_red_pegs}"
-    # p "num_of_white_pegs: #{num_of_white_pegs}"
+    pegs = ""
+    num_of_red_pegs.times { pegs += "R " }
+    num_of_white_pegs.times { pegs += "W " }
+
+    if @turn_number <= 10  then
+      @turn_number += 1
+    end
+
+    @all_turns[@turn_number-2] = "\t              | #{player.guess[0]} #{player.guess[1]} #{player.guess[2]} #{player.guess[3]} | #{pegs}" 
+    
+    # insert "Current turn"
+    if @turn_number <= 10 then
+      @all_turns[@turn_number-1] = @current_turn
+    end
+
+    # insert "Game over" after last turn
+    if @turn_number == 11 then
+      # change string on last turn
+      s1 = @all_turns[@turn_number-2][0..2]
+      s2 = @all_turns[@turn_number-2][12..-1]
+      @all_turns[@turn_number-2] = s1 + "Game Over" + s2
+    end
+
   end
   
   def self.description
@@ -124,7 +151,18 @@ class Computer < Player
   end
 
   def set_code
-    @code = "1234" # randomize later
+    digit_bank = ["1", "2", "3", "4", "5", "6"]
+    code_arr = []
+
+    4.times do 
+      rand_digit = digit_bank.sample
+      code_arr.push(rand_digit)
+      digit_bank.delete(rand_digit)
+    end
+
+    @code = code_arr
+
+    # @code = "1234"
   end
 
   def speak

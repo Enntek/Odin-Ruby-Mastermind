@@ -4,9 +4,31 @@
 # My settings: 6 numbers, 10 guesses
 
 # readability, modularity, brevity
-
 # the <super> in the baseclass Class Method refers to the Superclass's Class Method too.
-# how can we use inheritance?
+
+
+# add:
+# reveal code when player wins
+# work on computer play
+# remove "Current turn" after win
+# move "you win" message below game_board
+# make some private/public methods to get used to making these
+
+class String
+  def insert_overwrite(str, index)
+    # given str and index
+    # "overwrite" existing string at index
+    # new string should be same length as old string. 
+    # use .length to overwrite the same num of chars
+    # we may reuse this one
+  end
+
+end
+
+
+module Thing
+  # think of a module to practice with
+end
 
 class BoardGame
   def self.description
@@ -42,15 +64,10 @@ class Mastermind < BoardGame
 
   def establish_secret_code(code)
     @secret_code = code
-    # @secret_code = code.split("")
     puts "Secret code established!!"
   end
 
   def draw_board
-    # use Array.new to save each turn
-    # after each sucessive turn, set array[index] to turn
-    # draw board with elements from this array
-
     puts "\n\t                X X X X "
     
     for i in (0..@all_turns.length-1).reverse_each
@@ -65,7 +82,7 @@ class Mastermind < BoardGame
     num_of_red_pegs = 0
     num_of_white_pegs = 0
 
-    if player.guess == @secret_code then puts "You cracked the code! You won!" end
+    if player.guess == @secret_code then puts "\n<< You cracked the code! You won! >>\n" end
     
     num_of_red_pegs = @secret_code.each_index.reduce(0) do |total_red, index|
       if player.guess[index] == @secret_code[index]
@@ -161,7 +178,6 @@ class Computer < Player
     end
 
     @code = code_arr
-
     # @code = "1234"
   end
 

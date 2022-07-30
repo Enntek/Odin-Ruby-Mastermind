@@ -114,7 +114,11 @@ class Mastermind < BoardGame
     
     # insert 'Current turn'
     if @turn_number <= 10 then
-      @all_turns[@turn_number-1] = @current_turn
+      if @game_over == true 
+        @all_turns[@turn_number - 1] =  "`\t              | * * * * | You won!"
+      else
+        @all_turns[@turn_number - 1] = @current_turn
+      end
     end
 
     # insert 'Game over' after last turn
@@ -184,7 +188,7 @@ class Computer < Player
     end
 
     @code = code_arr
-    # @code = ['1', '2', '3', '4']
+    @code = ['1', '2', '3', '4']
   end
 
   def speak

@@ -8,7 +8,6 @@
 # add:
 # reveal code when player wins
 # work on computer play
-# remove 'Current turn' after win
 # move 'you win' message below game_board
 # make some private/public methods to get used to making these
 # try namespacing using modules
@@ -45,7 +44,7 @@ class Mastermind < BoardGame
     computer = Computer.new
     establish_secret_code(computer.code)
     # human.speak
-    @current_turn = "\t Current turn | * * * * |" 
+    @current_turn = "\t Current turn | * * * * |"
     @all_turns = Array.new(10, "\t              | * * * * |")
     @all_turns[0] = @current_turn
     draw_board
@@ -53,10 +52,11 @@ class Mastermind < BoardGame
   end
 
   def play_game(player1, player2)
-    while true
+    loop do
       player1.take_turn
       compare_codes(player1)
       draw_board
+      break if @game_over == true
     end
   end
 
@@ -66,7 +66,6 @@ class Mastermind < BoardGame
   end
 
   def draw_board
-    
     if @game_over == true
       puts "\n\t                #{@secret_code[0]} #{@secret_code[1]} #{@secret_code[2]} #{@secret_code[3]} "
     else
@@ -86,7 +85,7 @@ class Mastermind < BoardGame
     num_of_white_pegs = 0
 
     if player.guess == @secret_code
-      puts "\n<< You cracked the code! You won! >>\n"
+      puts "\n\t<< You cracked the code! You won! >>\n"
       @game_over = true
     end
     
@@ -130,14 +129,14 @@ class Mastermind < BoardGame
     end
 
   end
-  
+
   def self.description
     super
     puts '<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>'
     puts "<< Mastermind is a classic 2 player boardgame. >> \n\n<< One player is the code-setter, and the other the codebreaker. >>\n "
     puts "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>\n "
   end
-  
+
   def self.history
     'This game dates back a century when it was then called Bulls & Cows.'
   end
@@ -188,7 +187,7 @@ class Computer < Player
     end
 
     @code = code_arr
-    @code = ['1', '2', '3', '4']
+    # @code = ['1', '2', '3', '4']
   end
 
   def speak

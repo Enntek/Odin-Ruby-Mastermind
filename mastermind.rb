@@ -17,28 +17,69 @@
 
 require 'pry-byebug'
 
-module Versionable
-  
-  # In order to modularize class methods, do it this way
-  def self.included(base)
-    base.extend(ClassMethods)
-  end
-  
-  module ClassMethods
-    def show_version
-      puts @@version
-    end
-  end
+# module Maths
+#   class Addition
+#     def sum(a, b)
+#       a + b
+#     end
+#   end
+# end
+
+module Playable
+  puts 'This is a playable game!'
 end
 
 class BoardGame
+  @@version = '1.00'
   def description
     puts 'Boardgames are a great way to spend time with family!'
+  end
+
+  def self.show_version
+    puts @@version
   end
 end
 
 class Mastermind < BoardGame
+  @@version = '0.95 Beta'
 
+  def initialize
+    initialize_board
+    take_turn
+    draw_board
+  end
+  
+  def initialize_board
+    @turns = Array.new(10) { Array.new(3) }
+    @turns.each_with_index do |subarr, index|
+      if index < 9
+        subarr[0] = "┋  #{index + 1}  ┆"
+      else
+        subarr[0] = "┋  #{index + 1} ┆"
+      end
+
+      subarr[1] = "┋#{'       '.bg_gray}┋#{'       '.bg_gray}┋#{'       '.bg_gray}┋#{'       '.bg_gray}┋"
+      subarr[2] = '┆ ⏺ ⏺ ⏺ ⏺  ┋'
+    end
+  end
+
+  def take_turn
+    # @turns[0][1] = "┋#{'       '.bg_red}┋#{'       '.bg_gray}┋#{'       '.bg_green}┋#{'       '.bg_gray}┋"
+  end
+
+  def draw_board
+    puts ' __________________________________________________'
+    puts '┋              ⏺⏺⏺⏺ MASTERMIND ⏺⏺⏺⏺                ┋'
+    # puts "       ┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋"
+    puts '┋==================================================┋'
+    puts "┋ Turn ┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋   Clues   ┋"
+    puts '┋╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍┋'
+    @turns.each do |subarray|
+      puts subarray[0] + subarray[1] + subarray[2]
+      puts '┋--------------------------------------------------┋'
+    end
+    puts ' ⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐'
+  end
 end
 
 class Player
@@ -81,3 +122,6 @@ class String
   def blink;          "\e[5m#{self}\e[25m" end
   def reverse_color;  "\e[7m#{self}\e[27m" end
 end
+
+Mastermind.show_version
+new = Mastermind.new

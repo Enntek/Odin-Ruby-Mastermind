@@ -6,6 +6,7 @@ module Foo
   end
   module ClassMethods
     def a_class_method
+      puts @@baz
       puts "ClassMethod Inside Module"
     end
   end
@@ -16,20 +17,21 @@ module Foo
  end
  
  class FooBar
+  @@baz = 5
   include Foo
  end
  
  FooBar.a_class_method
  
- puts FooBar.methods.include?(:a_class_method)
+#  puts FooBar.methods.include?(:a_class_method)
  
- puts FooBar.methods.include?(:not_a_class_method)
+#  puts FooBar.methods.include?(:not_a_class_method)
  
- fb = FooBar.new
+#  fb = FooBar.new
  
- fb.not_a_class_method
+#  fb.not_a_class_method
  
- puts fb.methods.include?(:not_a_class_method)
+#  puts fb.methods.include?(:not_a_class_method)
  
- puts fb.methods.include?(:a_class_method)
+#  puts fb.methods.include?(:a_class_method)
  

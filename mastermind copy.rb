@@ -253,5 +253,6 @@ class String
 end
 
 # BoardGame.description (subclass inherits)
-Mastermind.description
-new_game = Mastermind.new
+# Mastermind.description
+# new_game = Mastermind.new
+# Mastermind.show_version

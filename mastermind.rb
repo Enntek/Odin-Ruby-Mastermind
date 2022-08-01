@@ -15,8 +15,6 @@
 
 # overwrite string with a substring, does not change length
 
-require 'pry-byebug'
-
 # module Maths
 #   class Addition
 #     def sum(a, b)
@@ -24,6 +22,8 @@ require 'pry-byebug'
 #     end
 #   end
 # end
+
+require 'pry-byebug'
 
 module Playable
   puts 'This is a playable game!'
@@ -42,16 +42,34 @@ end
 
 class Mastermind < BoardGame
   @@version = '0.95 Beta'
+  
 
   def initialize
+    choose_role
+    set_secret_code
+    @guesses = 0
     initialize_board
-    take_turn
     draw_board
   end
-  
+
+  def choose_role
+    puts "Would you like to be the code-maker or code-breaker? ['m'/'b']"
+    if true == true
+      @human = CodeBreaker.new
+      @computer = CodeSetter.new 
+    else
+      @human = CodeSetter.new
+      @computer = CodeBreaker.new
+    end
+  end
+
+  def set_secret_code
+    @secret_code = @computer.code.to_s.split('')
+  end
+
   def initialize_board
     @turns = Array.new(10) { Array.new(3) }
-    @turns.each_with_index do |subarr, index|
+    @turns.reverse_each.with_index do |subarr, index|
       if index < 9
         subarr[0] = "┋  #{index + 1}  ┆"
       else
@@ -63,13 +81,9 @@ class Mastermind < BoardGame
     end
   end
 
-  def take_turn
-    # @turns[0][1] = "┋#{'       '.bg_red}┋#{'       '.bg_gray}┋#{'       '.bg_green}┋#{'       '.bg_gray}┋"
-  end
-
   def draw_board
     puts ' __________________________________________________'
-    puts '┋              ⏺⏺⏺⏺ MASTERMIND ⏺⏺⏺⏺                ┋'
+    puts '┋              ⏺⏺⏺⏺  MASTERMIND ⏺⏺⏺⏺               ┋'
     # puts "       ┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋"
     puts '┋==================================================┋'
     puts "┋ Turn ┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋   Clues   ┋"
@@ -80,12 +94,94 @@ class Mastermind < BoardGame
     end
     puts ' ⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐'
   end
+
+  def play
+    loop do
+      take_turn
+      check_guess
+      draw_board
+      break
+    end
+  end
+
+  def take_turn
+    get_guess
+    # @turns[9][1] = "┋#{'       '.bg_red}┋#{'       '.bg_gray}┋#{'       '.bg_green}┋#{'       '.bg_gray}┋"
+  end
+
+  # now, draw the bar
+
+  def get_guess
+    if @human.is_a?(CodeBreaker)
+      puts 'Please enter a guess: '
+      @guess = @human.input_guess.to_s.split('')
+    end
+  end
+
+  def check_guess
+    if @guess == @secret_code
+      puts 'You won!'
+    else
+      red_pegs = calculate_red_pegs(@guess, @secret_code)
+      gray_pegs = calculate_gray_pegs(@guess, @secret_code, red_pegs)
+    end
+
+    puts "total red is #{red_pegs}"
+    puts "total white is #{gray_pegs}"
+    
+    build_bar(red_pegs, gray_pegs)
+  end
+
+  def build_bar(num_reds, num_grays)
+    bar = 'result: '
+    
+    num_reds.times do
+       bar += 'R'
+    end
+
+    num_grays.times do
+      bar += 'G'
+    end
+
+    puts bar
+  end
+
+  def calculate_red_pegs(guess, code)
+    code.each_index.reduce(0) do |total_red, index|
+      if guess[index] == code[index]
+        total_red +=1
+      end
+
+      total_red
+    end
+  end
+
+  def calculate_gray_pegs(guess, code, num_reds)
+    wrong_code_digits = code - guess #subtract 2 arrays
+    num_correct_digits = 4 - wrong_code_digits.length
+    num_of_gray_pegs = num_correct_digits - num_reds
+  end
 end
 
-class Player
+class CodeBreaker
+  def initialize
+  end
+
+  def input_guess
+    gets.chomp
+  end
 end
 
-class Computer
+class CodeSetter
+  attr_reader :code
+
+  def initialize
+    input_code
+  end
+
+  def input_code
+    @code = 1234
+  end
 end
 
 class String
@@ -123,5 +219,7 @@ class String
   def reverse_color;  "\e[7m#{self}\e[27m" end
 end
 
-Mastermind.show_version
+# Mastermind.show_version
 new = Mastermind.new
+new.play
+

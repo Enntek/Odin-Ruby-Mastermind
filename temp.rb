@@ -1,14 +1,35 @@
 require 'pry-byebug'
 
-class String
-  def insert_overwrite(str, index)
-    self.insert(index, str)
-    self[0..(index + str.length - 1)] + self[(index + str.length + str.length)..-1]
+module Foo
+  def self.included(base)
+    base.extend(ClassMethods)
   end
-end
-
-
-
-p "hey, hello world!".insert_overwrite("heywhatisthisthing", 5)
-
-#=> 'hey, wazza world!'
+  module ClassMethods
+    def a_class_method
+      puts "ClassMethod Inside Module"
+    end
+  end
+ 
+  def not_a_class_method
+    puts "Instance method of foo module"
+  end
+ end
+ 
+ class FooBar
+  include Foo
+ end
+ 
+ FooBar.a_class_method
+ 
+ puts FooBar.methods.include?(:a_class_method)
+ 
+ puts FooBar.methods.include?(:not_a_class_method)
+ 
+ fb = FooBar.new
+ 
+ fb.not_a_class_method
+ 
+ puts fb.methods.include?(:not_a_class_method)
+ 
+ puts fb.methods.include?(:a_class_method)
+ 

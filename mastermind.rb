@@ -8,6 +8,8 @@
 # symbols: 🢂🢀⏺
 
 # add:
+# find unicode symbol that works on replit, current peg doesn't show color
+# check valid input for: select side, digit input
 # work on computer play
 # make some private/public methods to get used to making these
 # try namespacing using modules
@@ -45,15 +47,19 @@ class Mastermind < BoardGame
   
 
   def initialize
+    intro
     choose_role
     set_secret_code
     @guesses = 0
+    @game_won = false
     initialize_board
     draw_board
   end
 
   def choose_role
-    puts "Would you like to be the code-maker or code-breaker? ['m'/'b']"
+    puts "               Would you like to be the code-maker(M) or code-breaker(B)?"
+    choice = gets.chomp
+
     if true == true
       @human = CodeBreaker.new
       @computer = CodeSetter.new 
@@ -68,6 +74,7 @@ class Mastermind < BoardGame
   end
 
   def initialize_board
+    @code_bar = "┋ Turn ┋#{'   ?   '.bg_black}┋#{'   ?   '.bg_black}┋#{'   ?   '.bg_black}┋#{'   ?   '.bg_black}┋   Clues   ┋"
     @turns = Array.new(10) { Array.new(3) }
     @turns.reverse_each.with_index do |subarr, index|
       if index < 9
@@ -84,15 +91,14 @@ class Mastermind < BoardGame
   def draw_board
     puts ' __________________________________________________'
     puts '┋              ⏺⏺⏺⏺  MASTERMIND ⏺⏺⏺⏺               ┋'
-    # puts "       ┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋"
     puts '┋==================================================┋'
-    puts "┋ Turn ┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋#{'   ?   '.bg_red}┋   Clues   ┋"
+    puts @code_bar
     puts '┋╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍┋'
     @turns.each do |subarray|
       puts subarray[0] + subarray[1] + subarray[2]
       puts '┋--------------------------------------------------┋'
     end
-    puts ' ⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐⌐'
+    puts "'╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍'"
   end
 
   def play
@@ -100,13 +106,28 @@ class Mastermind < BoardGame
       take_turn
       check_guess
       draw_board
-      break
+
+      if @guesses == 10 && @game_won == false
+        puts "You are out of turns!\n"\
+              "Game over!"
+        return
+      elsif @game_won == true
+        win_message
+        return
+      end
     end
+
+  end
+
+  def win_message
+    puts "You cracked the secret code!\n"\
+        "Congratulations, you won!"
+    
   end
 
   def take_turn
     get_guess
-    # @turns[9][1] = "┋#{'       '.bg_red}┋#{'       '.bg_gray}┋#{'       '.bg_green}┋#{'       '.bg_gray}┋"
+    @guesses += 1
   end
 
   # now, draw the bar
@@ -119,31 +140,63 @@ class Mastermind < BoardGame
   end
 
   def check_guess
+    set_bar_colors(@guess)
+
     if @guess == @secret_code
-      puts 'You won!'
+      @game_won = true
+      set_bar_colors(@secret_code)
     else
       red_pegs = calculate_red_pegs(@guess, @secret_code)
-      gray_pegs = calculate_gray_pegs(@guess, @secret_code, red_pegs)
+      brown_pegs = calculate_brown_pegs(@guess, @secret_code, red_pegs)
+      build_pegs(red_pegs, brown_pegs)
     end
-
-    puts "total red is #{red_pegs}"
-    puts "total white is #{gray_pegs}"
-    
-    build_bar(red_pegs, gray_pegs)
   end
 
-  def build_bar(num_reds, num_grays)
-    bar = 'result: '
-    
+  def set_bar_colors(array)
+    color_bar = ''
+
+    array.each do |num|
+      case num
+      when '1'
+        color_bar += "#{'   1   '.bg_red}" + '┋'
+      when '2'
+        color_bar += "#{'   2   '.bg_green}" + '┋'
+      when '3'
+        color_bar += "#{'   3   '.bg_blue}" + '┋'
+      when '4'
+        color_bar += "#{'   4   '.bg_magenta}" + '┋'
+      when '5'
+        color_bar += "#{'   5   '.bg_cyan}" + '┋'
+      when '6'
+        color_bar += "#{'   6   '.bg_brown}" + '┋'
+      end
+    end
+
+    if array == @secret_code
+      @code_bar = '┋ Turn ┋' + color_bar + '           ┋'
+    end
+
+    if array == @guess
+      @turns[10-@guesses][1] = '┋' + color_bar
+    end
+  end
+
+  def build_pegs(num_reds, num_browns)
+    pegs = ''
+
     num_reds.times do
-       bar += 'R'
+      pegs += "#{'⏺ '.red}"
     end
 
-    num_grays.times do
-      bar += 'G'
+    num_browns.times do
+      pegs += "#{'⏺ '.brown}"
     end
 
-    puts bar
+    (4 - num_reds - num_browns).times do
+      pegs += "#{'⏺ '.gray}"
+    end
+
+    @turns[10 - @guesses][2] = '┆ ' + pegs  + ' ┋'
   end
 
   def calculate_red_pegs(guess, code)
@@ -156,11 +209,28 @@ class Mastermind < BoardGame
     end
   end
 
-  def calculate_gray_pegs(guess, code, num_reds)
+  def calculate_brown_pegs(guess, code, num_reds)
     wrong_code_digits = code - guess #subtract 2 arrays
     num_correct_digits = 4 - wrong_code_digits.length
-    num_of_gray_pegs = num_correct_digits - num_reds
+    num_of_brown_pegs = num_correct_digits - num_reds
   end
+
+  def intro
+    puts "\n"\
+          "                     ⏺ ⏺ ⏺ ⏺    #{'Welcome to Mastermind!'.red}   ⏺ ⏺ ⏺ ⏺       \n"\
+          " \n"\
+          "              Mastermind is a classic code-breaking game with 2 players. \n"\
+          "             One player is the code-maker, the other is the code-breaker. \n"\
+          " \n"\
+          "           You will choose to be either the code-maker or the code-breaker. \n"\
+          "         The code-maker will establish a hard to guess code. It is the job of \n"\
+          "                   the code-breaker to crack the code within 10 tries.\n"\
+          " \n"\
+          "            After each attempt, the code-breaker will be given these clues:\n"\
+          "              #{"⏺".red} - Indication that the color and the location is CORRECT.\n"\
+          "         #{"⏺".gray} - Indication that the color is correct and the location is INCORRECT.\n"\
+          " \n"\
+    end
 end
 
 class CodeBreaker

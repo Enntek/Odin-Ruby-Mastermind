@@ -8,6 +8,7 @@
 # symbols: 🢂🢀⏺
 
 # add:
+# randomize computer code
 # find unicode symbol that works on replit, current peg doesn't show color
 # check valid input for: select side, digit input
 # work on computer play

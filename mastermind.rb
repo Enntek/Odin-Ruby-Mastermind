@@ -3,37 +3,13 @@
 # Goal: Build a console based version of the game Mastermind
 # My settings: 6 numbers, 10 guesses
 
-# the <super> in the baseclass Class Method refers to the Superclass's Class Method too.
-
-# symbols: 🢂🢀⏺
-
-# add:
-# randomize computer code
-# find unicode symbol that works on replit, current peg doesn't show color
-# check valid input for: select side, digit input
-# work on computer play
-# make some private/public methods to get used to making these
-# try namespacing using modules
-# include 1 module's method
-
-# overwrite string with a substring, does not change length
-
-# module Maths
-#   class Addition
-#     def sum(a, b)
-#       a + b
-#     end
-#   end
-# end
-
-require 'pry-byebug'
-
 module Playable
   puts 'This is a playable game!'
 end
 
 class BoardGame
   @@version = '1.00'
+
   def description
     puts 'Boardgames are a great way to spend time with family!'
   end
@@ -44,8 +20,8 @@ class BoardGame
 end
 
 class Mastermind < BoardGame
+  attr_reader :human, :computer
   @@version = '0.95 Beta'
-  
 
   def initialize
     intro
@@ -59,19 +35,34 @@ class Mastermind < BoardGame
 
   def choose_role
     puts "               Would you like to be the code-maker(M) or code-breaker(B)?"
-    choice = gets.chomp
+    choice = gets.chomp.downcase
 
-    if true == true
-      @human = CodeBreaker.new
-      @computer = CodeSetter.new 
-    else
-      @human = CodeSetter.new
+    case choice
+    when 'b'
+      @human = CodeBreaker.new(is_human: true)
+      @computer = CodeSetter.new
+    when 'm'
+      @human = CodeSetter.new(is_human: true)
       @computer = CodeBreaker.new
     end
   end
 
   def set_secret_code
-    @secret_code = @computer.code.to_s.split('')
+    if human.instance_of?(CodeBreaker)
+      @secret_code = @computer.code.to_s.split('')
+      puts 'Secret code has been set!'
+    elsif human.instance_of?(CodeSetter)
+      puts 'Please input a 4 digit number using only 1 to 6'
+      loop do
+        input = gets.chomp
+        if input.match(/[1-6]{4}/)
+          @secret_code = input.split('')
+          break
+        end
+
+        puts 'Invalid input! Try again!'
+      end
+    end
   end
 
   def initialize_board
@@ -85,7 +76,7 @@ class Mastermind < BoardGame
       end
 
       subarr[1] = "┋#{'       '.bg_gray}┋#{'       '.bg_gray}┋#{'       '.bg_gray}┋#{'       '.bg_gray}┋"
-      subarr[2] = '┆ ⏺ ⏺ ⏺ ⏺  ┋'
+      subarr[2] = '┆ ◘ ◘ ◘ ◘  ┋'
     end
   end
 
@@ -109,21 +100,19 @@ class Mastermind < BoardGame
       draw_board
 
       if @guesses == 10 && @game_won == false
-        puts "You are out of turns!\n"\
-              "Game over!"
+        puts "You are out of turns!\nGame over!" if @human.instance_of?(CodeBreaker)
+        puts "The computer is out of turns!\nGame over!" if @computer.instance_of?(CodeBreaker)
         return
       elsif @game_won == true
         win_message
         return
       end
     end
-
   end
 
   def win_message
     puts "You cracked the secret code!\n"\
         "Congratulations, you won!"
-    
   end
 
   def take_turn
@@ -131,12 +120,13 @@ class Mastermind < BoardGame
     @guesses += 1
   end
 
-  # now, draw the bar
-
   def get_guess
-    if @human.is_a?(CodeBreaker)
+    if human.instance_of?(CodeBreaker)
       puts 'Please enter a guess: '
-      @guess = @human.input_guess.to_s.split('')
+      @guess = human.input_guess.to_s.split('')
+    elsif computer.instance_of?(CodeBreaker)
+      puts 'Computer enters a guess...'
+      @guess = Array.new(4).map { rand(1..6) }.join.to_s.split('')
     end
   end
 
@@ -186,15 +176,15 @@ class Mastermind < BoardGame
     pegs = ''
 
     num_reds.times do
-      pegs += "#{'⏺ '.red}"
+      pegs += "#{'◘ '.red}"
     end
 
     num_browns.times do
-      pegs += "#{'⏺ '.brown}"
+      pegs += "#{'◘ '.brown}"
     end
 
     (4 - num_reds - num_browns).times do
-      pegs += "#{'⏺ '.gray}"
+      pegs += "#{'◘ '.gray}"
     end
 
     @turns[10 - @guesses][2] = '┆ ' + pegs  + ' ┋'
@@ -223,19 +213,23 @@ class Mastermind < BoardGame
           "              Mastermind is a classic code-breaking game with 2 players. \n"\
           "             One player is the code-maker, the other is the code-breaker. \n"\
           " \n"\
-          "           You will choose to be either the code-maker or the code-breaker. \n"\
-          "         The code-maker will establish a hard to guess code. It is the job of \n"\
-          "                   the code-breaker to crack the code within 10 tries.\n"\
+          "             You will choose to be either the code-maker or the code-breaker. \n"\
+          "         The code-maker will establish a hard to guess code. The code is comprised of \n"\
+          "          4 digits, each digit from 1-6. It is the job of the code-breaker to crack \n"\
+          "                                the code within 10 tries.\n"\
           " \n"\
           "            After each attempt, the code-breaker will be given these clues:\n"\
-          "              #{"⏺".red} - Indication that the color and the location is CORRECT.\n"\
-          "         #{"⏺".gray} - Indication that the color is correct and the location is INCORRECT.\n"\
+          "              #{"◘".red} - Indication that the color and the location is CORRECT.\n"\
+          "         #{"◘".gray} - Indication that the color is correct and the location is INCORRECT.\n"\
           " \n"\
-    end
+  end
 end
 
 class CodeBreaker
-  def initialize
+  attr_reader :is_human
+
+  def initialize(is_human: false)
+    @is_human = is_human
   end
 
   def input_guess
@@ -244,14 +238,19 @@ class CodeBreaker
 end
 
 class CodeSetter
-  attr_reader :code
+  attr_reader :code, :human
 
-  def initialize
+  def initialize(is_human: false)
     input_code
+    @is_human = is_human
   end
 
   def input_code
-    @code = 1234
+    @code = random_code
+  end
+
+  def random_code
+    Array.new(4).map { rand(1..6) }.join
   end
 end
 
@@ -293,4 +292,3 @@ end
 # Mastermind.show_version
 new = Mastermind.new
 new.play
-
